@@ -1,0 +1,128 @@
+CREATE TABLE txn.retention_categories (
+    id                      UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
+    code                    VARCHAR(64)     NOT NULL, 
+    name                    VARCHAR(255)    NOT NULL,
+    description             TEXT,
+    status                  VARCHAR(16)     NOT NULL DEFAULT 'draft'
+        CHECK (lower(status) IN ('active', 'draft', 'inactive')),
+    has_ever_held_content   BOOLEAN         NOT NULL DEFAULT FALSE,
+    
+    -- Temporal Columns
+    effective_date          TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    end_date                TIMESTAMPTZ     NOT NULL DEFAULT '9999-12-31 23:59:59+00', -- Forces active by default
+    
+    -- Audit Columns
+    created_at              TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    created_by              VARCHAR(255)    NOT NULL,
+    updated_at              TIMESTAMPTZ,
+    updated_by              VARCHAR(255),
+    deleted_at              TIMESTAMPTZ,
+    deleted_by              VARCHAR(255),
+
+    -- Constraints
+    CONSTRAINT chk_category_dates CHECK (end_date > effective_date), -- Simplified constraint
+    CONSTRAINT unique_code_effective UNIQUE (code, effective_date)
+);
+
+CREATE TABLE txn.retention_sub_categories (
+    id                      UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
+    category_id             UUID            NOT NULL 
+        REFERENCES txn.retention_categories(id),
+    code                    VARCHAR(64)     NOT NULL,
+    name                    VARCHAR(255)    NOT NULL,
+    description             TEXT,
+    retention_duration_value INTEGER        NOT NULL CHECK (retention_duration_value > 0),
+    retention_duration_unit VARCHAR(16)     NOT NULL
+        CHECK (lower(retention_duration_unit) IN ('days', 'months', 'years')),
+    status                  VARCHAR(16)     NOT NULL DEFAULT 'draft'
+        CHECK (lower(status) IN ('active', 'draft', 'inactive')),
+    has_ever_held_content   BOOLEAN         NOT NULL DEFAULT FALSE,
+    fallback_sub_category_id UUID           REFERENCES txn.retention_sub_categories(id),
+    classification_allowed  BOOLEAN         NOT NULL DEFAULT TRUE,
+    
+    -- Temporal Columns
+    effective_date          TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    end_date                TIMESTAMPTZ     NOT NULL DEFAULT '9999-12-31 23:59:59+00',
+
+    -- Audit Columns
+    created_at              TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    created_by              VARCHAR(255)    NOT NULL,
+    updated_at              TIMESTAMPTZ,
+    updated_by              VARCHAR(255),
+    deleted_at              TIMESTAMPTZ,
+    deleted_by              VARCHAR(255),
+
+    -- Constraints
+    CONSTRAINT chk_sub_category_dates CHECK (end_date > effective_date),
+    
+    -- PREVENTS OVERLAPPING TIME SLOTS FOR THE SAME CODE + CATEGORY
+    CONSTRAINT exclude_overlapping_sub_category_periods EXCLUDE USING gist (
+        category_id WITH =,
+        code WITH =,
+        tstzrange(effective_date, end_date, '[]') WITH &&
+    )
+);
+CREATE TABLE txn.retention_table_registry (
+    id                      UUID            PRIMARY KEY DEFAULT gen_random_uuid(),
+    schema_name             VARCHAR(255)    NOT NULL DEFAULT 'txn',
+    table_name              VARCHAR(255)    NOT NULL,
+    classification_pattern  VARCHAR(8)      NOT NULL DEFAULT 'B'
+        CHECK (classification_pattern IN ('B')),
+    is_active               BOOLEAN         NOT NULL DEFAULT TRUE,
+    basis_date_column       VARCHAR(255)    NOT NULL DEFAULT 'created_at', -- Updated default
+    
+    -- Temporal / Retention Tracking
+    rtn_effective_date TIMESTAMPTZ    NOT NULL DEFAULT NOW(),        -- Added default
+    rtn_end_date                TIMESTAMPTZ     NOT NULL DEFAULT '9999-12-31 23:59:59+00',
+    
+    sub_category_id UUID            NOT NULL 
+        REFERENCES txn.retention_sub_categories(id),
+    legal_hold_status       BOOLEAN         NOT NULL DEFAULT FALSE,
+    
+    -- Audit Columns
+    created_at              TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
+    created_by              VARCHAR(255)    NOT NULL,
+    updated_at              TIMESTAMPTZ,
+    updated_by              VARCHAR(255),
+    deleted_at              TIMESTAMPTZ,
+    deleted_by              VARCHAR(255),
+
+    -- Constraints
+    CONSTRAINT chk_registry_dates CHECK (end_date > retention_effective_date),
+    CONSTRAINT unique_schema_name_table_name UNIQUE (schema_name, table_name)
+);
+
+-- Speeds up queries looking for active categories on a given timestamp
+CREATE INDEX idx_retention_categories_temporal 
+ON txn.retention_categories (effective_date, end_date);
+
+-- Optional: Speeds up filter/lookups by status if you frequently filter active vs draft
+CREATE INDEX idx_retention_categories_status 
+ON txn.retention_categories (status);
+
+-- CRITICAL: Indexes the foreign key to the parent categories table
+CREATE INDEX idx_retention_sub_categories_category_id 
+ON txn.retention_sub_categories (category_id);
+
+-- Indexes the self-referencing foreign key for the fallback subcategory
+CREATE INDEX idx_retention_sub_categories_fallback_id 
+ON txn.retention_sub_categories (fallback_sub_category_id) 
+WHERE fallback_sub_category_id IS NOT NULL;
+
+-- Speeds up queries searching for active subcategories across dates
+CREATE INDEX idx_retention_sub_categories_temporal 
+ON txn.retention_sub_categories (effective_date, end_date);
+
+-- CRITICAL: Indexes the foreign key linking back to sub_categories
+CREATE INDEX idx_retention_table_registry_sub_cat_id 
+ON txn.retention_table_registry (sub_category_id);
+
+-- Speeds up lookups checking for active registrations and active table maps
+CREATE INDEX idx_retention_table_registry_temporal 
+ON txn.retention_table_registry (rtn_effective_date, rtn_end_date);
+
+-- Partial index: optimized for looking up tables currently on legal hold
+CREATE INDEX idx_retention_table_registry_legal_hold 
+ON txn.retention_table_registry (legal_hold_status) 
+WHERE legal_hold_status = TRUE;
+

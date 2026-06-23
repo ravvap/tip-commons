@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="2.216" tests="22" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="17"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="Cp1252"/>
+    <property name="java.class.path" value="C:\Users\ravva\Downloads\tip-commons\tip-commons\target\test-classes;C:\Users\ravva\Downloads\tip-commons\tip-commons\target\classes;C:\Users\ravva\.m2\repository\org\slf4j\slf4j-api\2.0.13\slf4j-api-2.0.13.jar;C:\Users\ravva\.m2\repository\org\junit\jupiter\junit-jupiter\5.10.2\junit-jupiter-5.10.2.jar;C:\Users\ravva\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.10.2\junit-jupiter-api-5.10.2.jar;C:\Users\ravva\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\ravva\.m2\repository\org\junit\platform\junit-platform-commons\1.10.2\junit-platform-commons-1.10.2.jar;C:\Users\ravva\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\ravva\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.10.2\junit-jupiter-params-5.10.2.jar;C:\Users\ravva\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.10.2\junit-jupiter-engine-5.10.2.jar;C:\Users\ravva\.m2\repository\org\junit\platform\junit-platform-engine\1.10.2\junit-platform-engine-1.10.2.jar;C:\Users\ravva\.m2\repository\org\mockito\mockito-junit-jupiter\5.11.0\mockito-junit-jupiter-5.11.0.jar;C:\Users\ravva\.m2\repository\org\mockito\mockito-core\5.11.0\mockito-core-5.11.0.jar;C:\Users\ravva\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.12\byte-buddy-agent-1.14.12.jar;C:\Users\ravva\.m2\repository\org\objenesis\objenesis\3.3\objenesis-3.3.jar;C:\Users\ravva\.m2\repository\org\assertj\assertj-core\3.25.3\assertj-core-3.25.3.jar;C:\Users\ravva\.m2\repository\net\bytebuddy\byte-buddy\1.14.11\byte-buddy-1.14.11.jar;C:\Users\ravva\.m2\repository\ch\qos\logback\logback-classic\1.5.6\logback-classic-1.5.6.jar;C:\Users\ravva\.m2\repository\ch\qos\logback\logback-core\1.5.6\logback-core-1.5.6.jar;"/>
+    <property name="java.vm.vendor" value="Eclipse Adoptium"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="java.vendor.url" value="https://adoptium.net/"/>
+    <property name="user.timezone" value="America/New_York"/>
+    <property name="os.name" value="Windows 11"/>
+    <property name="java.vm.specification.version" value="17"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.boot.library.path" value="C:\Users\ravva\.p2\pool\plugins\org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.11.v20240426-1830\jre\bin"/>
+    <property name="sun.java.command" value="C:\Users\ravva\AppData\Local\Temp\surefire10784858118277663224\surefirebooter-20260622232751200_3.jar C:\Users\ravva\AppData\Local\Temp\surefire10784858118277663224 2026-06-22T23-27-51_072-jvmRun1 surefire-20260622232751200_1tmp surefire_0-20260622232751200_2tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="C:\Users\ravva\Downloads\tip-commons\tip-commons\target\test-classes;C:\Users\ravva\Downloads\tip-commons\tip-commons\target\classes;C:\Users\ravva\.m2\repository\org\slf4j\slf4j-api\2.0.13\slf4j-api-2.0.13.jar;C:\Users\ravva\.m2\repository\org\junit\jupiter\junit-jupiter\5.10.2\junit-jupiter-5.10.2.jar;C:\Users\ravva\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.10.2\junit-jupiter-api-5.10.2.jar;C:\Users\ravva\.m2\repository\org\opentest4j\opentest4j\1.3.0\opentest4j-1.3.0.jar;C:\Users\ravva\.m2\repository\org\junit\platform\junit-platform-commons\1.10.2\junit-platform-commons-1.10.2.jar;C:\Users\ravva\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\ravva\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.10.2\junit-jupiter-params-5.10.2.jar;C:\Users\ravva\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.10.2\junit-jupiter-engine-5.10.2.jar;C:\Users\ravva\.m2\repository\org\junit\platform\junit-platform-engine\1.10.2\junit-platform-engine-1.10.2.jar;C:\Users\ravva\.m2\repository\org\mockito\mockito-junit-jupiter\5.11.0\mockito-junit-jupiter-5.11.0.jar;C:\Users\ravva\.m2\repository\org\mockito\mockito-core\5.11.0\mockito-core-5.11.0.jar;C:\Users\ravva\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.12\byte-buddy-agent-1.14.12.jar;C:\Users\ravva\.m2\repository\org\objenesis\objenesis\3.3\objenesis-3.3.jar;C:\Users\ravva\.m2\repository\org\assertj\assertj-core\3.25.3\assertj-core-3.25.3.jar;C:\Users\ravva\.m2\repository\net\bytebuddy\byte-buddy\1.14.11\byte-buddy-1.14.11.jar;C:\Users\ravva\.m2\repository\ch\qos\logback\logback-classic\1.5.6\logback-classic-1.5.6.jar;C:\Users\ravva\.m2\repository\ch\qos\logback\logback-core\1.5.6\logback-core-1.5.6.jar;"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="C:\Users\ravva"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2024-04-16"/>
+    <property name="java.home" value="C:\Users\ravva\.p2\pool\plugins\org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.11.v20240426-1830\jre"/>
+    <property name="file.separator" value="\"/>
+    <property name="style.color" value="always"/>
+    <property name="basedir" value="C:\Users\ravva\Downloads\tip-commons\tip-commons"/>
+    <property name="java.vm.compressedOopsMode" value="Zero based"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="C:\Users\ravva\AppData\Local\Temp\surefire10784858118277663224\surefirebooter-20260622232751200_3.jar"/>
+    <property name="user.script" value=""/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="17.0.11+9"/>
+    <property name="user.name" value="ravva"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="Cp1252"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="java.vendor.version" value="Temurin-17.0.11+9"/>
+    <property name="localRepository" value="C:\Users\ravva\.m2\repository"/>
+    <property name="java.vendor.url.bug" value="https://github.com/adoptium/adoptium-support/issues"/>
+    <property name="java.io.tmpdir" value="C:\Users\ravva\AppData\Local\Temp\"/>
+    <property name="java.version" value="17.0.11"/>
+    <property name="user.dir" value="C:\Users\ravva\Downloads\tip-commons\tip-commons"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="native.encoding" value="Cp1252"/>
+    <property name="java.library.path" value="C:\Users\ravva\.p2\pool\plugins\org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.11.v20240426-1830\jre\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:/Users/ravva/.p2/pool/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.11.v20240426-1830/jre/bin/server;C:/Users/ravva/.p2/pool/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.11.v20240426-1830/jre/bin;C:\Program Files\ImageMagick-7.1.2-Q16;C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\;C:\windows\System32\OpenSSH\;C:\Program Files\PuTTY\;C:\Program Files\Amazon\AWSCLIV2\;C:\Program Files\dotnet\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Program Files\nodejs\;C:\Users\ravva\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Java\jdk-11\bin;C:\Users\ravva\.dotnet\tools;C:\Users\ravva\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\ravva\AppData\Roaming\npm;C:\WINDOWS\System32;;."/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.vendor" value="Eclipse Adoptium"/>
+    <property name="java.vm.version" value="17.0.11+9"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="61.0"/>
+  </properties>
+  <testcase name="resolve_10Years" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="1.925"/>
+  <testcase name="addDuration_years" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.006"/>
+  <testcase name="validate_nullConnection" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.015"/>
+  <testcase name="resolve_registryMissing" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.007"/>
+  <testcase name="resolve_rowMissingDuringBasisRead" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.008"/>
+  <testcase name="apply_executesUpdateCorrectly" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.015"/>
+  <testcase name="validate_blankSchema" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.003"/>
+  <testcase name="resolve_legalHold_purgeIsNull" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.021">
+    <system-out><![CDATA[23:27:54.093 [main] WARN  g.f.t.c.retention.util.RetentionUtil - Legal hold ACTIVE for txn.tbl_jpmcinvoices — purge_date will be NULL for row 551ee23f-b306-47c9-88c1-dfd762d04440
+]]></system-out>
+  </testcase>
+  <testcase name="resolve_6Months" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.01"/>
+  <testcase name="resolve_basisDateIsNull" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.006"/>
+  <testcase name="sanitise_valid" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.005"/>
+  <testcase name="validate_nullRowId" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.005"/>
+  <testcase name="validate_nullTable" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.004"/>
+  <testcase name="addDuration_unknownUnit" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.004"/>
+  <testcase name="addDuration_days" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.004"/>
+  <testcase name="apply_updateAffectsZeroRows" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.007"/>
+  <testcase name="apply_sqlException_wrappedAsSqlError" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.016"/>
+  <testcase name="resolve_90Days" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.007"/>
+  <testcase name="apply_legalHold_setsNullOnPurgeDate" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.01">
+    <system-out><![CDATA[23:27:54.188 [main] WARN  g.f.t.c.retention.util.RetentionUtil - Legal hold ACTIVE for txn.tbl_jpmcinvoices — purge_date will be NULL for row 551ee23f-b306-47c9-88c1-dfd762d04440
+]]></system-out>
+  </testcase>
+  <testcase name="addDuration_months" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.004"/>
+  <testcase name="sanitise_nullRejected" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.004"/>
+  <testcase name="sanitise_hyphenRejected" classname="gov.fdic.tip.commons.retention.util.RetentionUtilTest" time="0.004"/>
+</testsuite>

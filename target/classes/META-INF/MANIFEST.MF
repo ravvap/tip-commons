@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Build-Jdk-Spec: 17
+Specification-Title: TIP Commons
+Specification-Version: 1.0
+Implementation-Title: TIP Commons
+Implementation-Version: 1.0.0-SNAPSHOT
+Artifact-Id: tip-commons
+Artifact-Version: 1.0.0-SNAPSHOT
+Built-By: FDIC TIP Team
+Created-By: Maven Integration for Eclipse
+
