@@ -1,0 +1,55 @@
+-- ==========================================
+-- 1. INSERT INTO RETENTION CATEGORIES
+-- ==========================================
+INSERT INTO txn.retention_categories (
+    id, code, name, description, status, has_ever_held_content, 
+    effective_date, end_date, created_at, created_by
+) VALUES
+(gen_random_uuid(), 'RS1', 'Record Set 1', 'Invoices, billing, and collection documentation for the Quarterly Deposit Insurance Assessment for all insured institutions.', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), 'RS2', 'Record Set 2', 'Anomaly verification and compliance reviews of reported quarterly assessment base.', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), 'RS3', 'Record Set 3', 'Calculation and collection of Civil Money Penalties for quarterly assessment late payments.', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), 'RS4', 'Record Set 4', 'Agendas, notes, and memos of Investment Advisory Group meetings.', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), 'RS5', 'Record Set 5', 'Monitor/track cash activity, payment packages, Title II activity, and other records that document the cash position.', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), 'RS6', 'Record Set 6', 'Investment activity and reporting for FDIC-managed funds.', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system');
+
+
+-- ==========================================
+-- 2. INSERT INTO RETENTION SUB-CATEGORIES
+-- ==========================================
+INSERT INTO txn.retention_sub_categories (
+    id, category_id, code, name, description, retention_duration_value, retention_duration_unit, 
+    status, has_ever_held_content, effective_date, end_date, created_at, created_by
+) VALUES
+-- RS1 Subcategories (10 years)
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS1' LIMIT 1), 'RS1_Source_System', 'Source System', 'RS1 Source System Records', 10, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS1' LIMIT 1), 'RS1_Invoices', 'Invoices', 'RS1 Invoice Records', 10, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS1' LIMIT 1), 'RS1_Collections', 'Collections', 'RS1 Collection Records', 10, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS1' LIMIT 1), 'RS1_Misc', 'Misc', 'RS1 Miscellaneous Records', 10, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+
+-- RS2 Subcategories (10 years)
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS2' LIMIT 1), 'RS2_Anomaly', 'Anomaly', 'RS2 Anomaly Records', 10, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS2' LIMIT 1), 'RS2_Reviews', 'Reviews', 'RS2 Review Records', 10, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS2' LIMIT 1), 'RS2_Misc', 'Misc', 'RS2 Miscellaneous Records', 10, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+
+-- RS3 Subcategories (10 years)
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS3' LIMIT 1), 'RS3_CMP', 'CMP', 'RS3 Civil Money Penalties Records', 10, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS3' LIMIT 1), 'RS3_MISC', 'MISC', 'RS3 Miscellaneous Records', 10, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+
+-- RS4 Subcategories (15 years)
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS4' LIMIT 1), 'RS4_IAG', 'IAG', 'RS4 Investment Advisory Group Records', 15, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS4' LIMIT 1), 'RS4_MISC', 'MISC', 'RS4 Miscellaneous Records', 15, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+
+-- RS5 Subcategories (7 years)
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS5' LIMIT 1), 'RS5_CIR', 'CIR', 'RS5 CIR Records', 7, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS5' LIMIT 1), 'RS5_FedLine', 'FedLine', 'RS5 FedLine Records', 7, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS5' LIMIT 1), 'RS5_IPAC', 'IPAC', 'RS5 IPAC Records', 7, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS5' LIMIT 1), 'RS5_Cash Recons', 'Cash Recons', 'RS5 Cash Reconciliations', 7, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS5' LIMIT 1), 'RS5_Wires', 'Wires', 'RS5 Wire Transfers', 7, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS5' LIMIT 1), 'RS5_Payroll', 'Payroll', 'RS5 Payroll Records', 7, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS5' LIMIT 1), 'RS5_MISC', 'MISC', 'RS5 Miscellaneous Records', 7, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+
+-- RS6 Subcategories (15 years)
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS6' LIMIT 1), 'RS6_NLF Investments', 'NLF Investments', 'RS6 NLF Investment Records', 15, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS6' LIMIT 1), 'RS6_Investment Reporting', 'Investment Reporting', 'RS6 Investment Reporting Records', 15, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS6' LIMIT 1), 'RS6_Investments', 'Investments', 'RS6 Investment Records', 15, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system'),
+(gen_random_uuid(), (SELECT id FROM txn.retention_categories WHERE code = 'RS6' LIMIT 1), 'RS6_MISC', 'MISC', 'RS6 Miscellaneous Records', 15, 'years', 'active', false, CURRENT_TIMESTAMP, '9999-12-31 23:59:59+00', CURRENT_TIMESTAMP, 'system');
