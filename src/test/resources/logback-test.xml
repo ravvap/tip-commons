@@ -5,7 +5,6 @@
             <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
-    <!-- Show WARN+ from the utility during tests; set to DEBUG to see all retention log lines -->
     <logger name="com.fdic.tip.commons" level="WARN"/>
     <root level="WARN">
         <appender-ref ref="STDOUT"/>

@@ -6,7 +6,16 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>gov.fdic.tip</groupId>
+    <!-- ================================================================
+         COORDINATES
+         Consuming service pom.xml:
+           <dependency>
+             <groupId>com.fdic.tip</groupId>
+             <artifactId>tip-commons</artifactId>
+             <version>1.0.0-SNAPSHOT</version>
+           </dependency>
+         ================================================================ -->
+    <groupId>com.fdic.tip</groupId>
     <artifactId>tip-commons</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -14,9 +23,9 @@
     <name>TIP Commons</name>
     <description>
         Shared utility library for FDIC Technology Infrastructure Program (TIP).
-        Contains reusable components across TIP microservices:
-          - Retention utilities (purge_date / effective_date stamping)
-          - (future) Audit helpers, common DTOs, shared exception hierarchy
+        Usable in plain Java, Spring, and Spring Boot projects.
+        Current modules: retention.
+        Planned modules: aspose, audit, notification.
     </description>
 
     <properties>
@@ -24,26 +33,74 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <!-- Dependency versions -->
+        <!-- Core dependency versions -->
+        <slf4j.version>2.0.13</slf4j.version>
+        <spring.version>6.1.8</spring.version>
+        <spring-boot.version>3.2.5</spring-boot.version>
+
+        <!-- Test dependency versions -->
         <junit.version>5.10.2</junit.version>
         <mockito.version>5.11.0</mockito.version>
         <assertj.version>3.25.3</assertj.version>
-        <slf4j.version>2.0.13</slf4j.version>
         <logback.version>1.5.6</logback.version>
+        <h2.version>2.2.224</h2.version>
+
+        <!-- Plugin versions -->
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+        <maven-jar-plugin.version>3.4.1</maven-jar-plugin.version>
+        <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.7.0</maven-javadoc-plugin.version>
+        <jacoco-plugin.version>0.8.12</jacoco-plugin.version>
     </properties>
 
     <dependencies>
 
-        <!-- SLF4J API only - consumers supply the binding (Logback via Spring Boot, etc.) -->
+        <!-- ============================================================
+             LOGGING - SLF4J API only.
+             Consumers supply the binding (Logback via Spring Boot starter,
+             Log4j2, JUL, etc.).  tip-commons never forces a logging impl.
+             ============================================================ -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
 
-        <!-- TEST SCOPE - not shipped in the distributed JAR -->
+        <!-- ============================================================
+             SPRING - ALL MARKED OPTIONAL.
+             tip-commons compiles against the Spring APIs so the
+             @Service / @Configuration / autoconfiguration code is built
+             into the JAR, but consuming plain-Java projects do NOT
+             transitively pull Spring onto their classpath.
+             Spring Boot / Spring projects already have Spring, so there
+             is no version conflict.
+             ============================================================ -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${spring.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>${spring-boot.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- ============================================================
+             TEST SCOPE - not included in the distributed JAR
+             ============================================================ -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -65,11 +122,34 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Logback only for tests - consumers bring their own SLF4J binding -->
+        <!-- Logback for tests only - consumers bring their own SLF4J binding -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- H2 in-memory DB for integration tests -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Spring Test (for @SpringBootTest-style tests in tip-commons itself) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
+            <version>${spring-boot.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -81,7 +161,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
                     <release>${java.version}</release>
                     <compilerArgs>
@@ -93,7 +173,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <includes>
                         <include>**/*Test.java</include>
@@ -105,27 +185,25 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>${maven-jar-plugin.version}</version>
                 <configuration>
+                    <finalName>${project.artifactId}-${project.version}</finalName>
                     <archive>
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                         <manifestEntries>
                             <Built-By>FDIC TIP Team</Built-By>
-                            <Artifact-Id>${project.artifactId}</Artifact-Id>
                             <Artifact-Version>${project.version}</Artifact-Version>
                         </manifestEntries>
                     </archive>
-                    <finalName>${project.artifactId}-${project.version}</finalName>
                 </configuration>
             </plugin>
 
         </plugins>
     </build>
 
-    <!-- mvn install -Prelease attaches sources + javadoc JARs -->
+    <!-- mvn install -Prelease  produces sources + javadoc JARs for IDE navigation -->
     <profiles>
         <profile>
             <id>release</id>
@@ -134,7 +212,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>3.2.1</version>
+                        <version>${maven-source-plugin.version}</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -145,7 +223,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>3.5.0</version>
+                        <version>${maven-javadoc-plugin.version}</version>
                         <configuration>
                             <doclint>none</doclint>
                             <quiet>true</quiet>
@@ -154,6 +232,21 @@
                             <execution>
                                 <id>attach-javadocs</id>
                                 <goals><goal>jar</goal></goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>${jacoco-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <goals><goal>prepare-agent</goal></goals>
+                            </execution>
+                            <execution>
+                                <id>report</id>
+                                <phase>verify</phase>
+                                <goals><goal>report</goal></goals>
                             </execution>
                         </executions>
                     </plugin>

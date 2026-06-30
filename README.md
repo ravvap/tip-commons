@@ -1,48 +1,39 @@
 # tip-commons
 
 Shared utility library for **FDIC Technology Infrastructure Program (TIP)** microservices.
-
-Provides reusable, Spring-free components that any TIP service can drop in as a standard Maven dependency.
-
----
-
-## Modules inside this JAR
-
-| Package | Purpose |
-|---|---|
-| `com.fdic.tip.commons.retention` | Retention stamping utility — stamps `purge_date` and `effective_date` on operational table rows |
-| *(future)* `com.fdic.tip.commons.audit` | Shared audit helpers |
-| *(future)* `com.fdic.tip.commons.exception` | Common exception hierarchy |
+Works in **Spring Boot**, **plain Spring**, and **non-Spring Java** projects.
 
 ---
 
-## Build
+## Project structure
 
-```bash
-# Compile + test
-mvn clean verify
-
-# Install to local ~/.m2 so other TIP projects can depend on it
-mvn clean install
-
-# Build with sources + javadoc JARs (for IDE navigation)
-mvn clean install -Prelease
-
-# Skip tests (not recommended)
-mvn clean install -DskipTests
+```
+tip-commons/
+├── pom.xml
+└── src/main/java/com/fdic/tip/commons/
+    │
+    ├── config/
+    │   └── TipCommonsAutoConfiguration.java      ← Spring Boot auto-registers beans
+    │
+    └── retention/
+        ├── constants/
+        │   ├── RetentionSql.java                 ← ALL SQL strings
+        │   ├── RetentionMessages.java             ← ALL log + error messages
+        │   └── RetentionConstants.java            ← Column names, schema, duration units
+        ├── exception/
+        │   └── RetentionException.java            ← Typed ErrorCode enum
+        ├── model/
+        │   └── RetentionContext.java              ← Resolved config + calculated dates
+        ├── core/
+        │   └── RetentionEngine.java               ← Shared logic (no Spring, no static state)
+        └── service/
+            ├── RetentionService.java              ← @Service bean (Spring / Spring Boot)
+            └── RetentionUtil.java                 ← Static API (non-Spring projects)
 ```
 
-Outputs under `target/`:
-- `tip-commons-1.0.0-SNAPSHOT.jar` — the library JAR
-- `tip-commons-1.0.0-SNAPSHOT-sources.jar` — source JAR
-- `tip-commons-1.0.0-SNAPSHOT-javadoc.jar` — Javadoc JAR
-- `site/jacoco/` — code coverage report
-
 ---
 
-## Add to a TIP microservice
-
-After running `mvn install`, add to the consuming service's `pom.xml`:
+## Add the dependency
 
 ```xml
 <dependency>
@@ -52,75 +43,174 @@ After running `mvn install`, add to the consuming service's `pom.xml`:
 </dependency>
 ```
 
-Spring Boot services need nothing else — SLF4J is already on the classpath via Spring Boot's logging starter.
-
 ---
 
-## Retention utility — quick usage
+## Usage
+
+### Spring Boot (recommended — zero config)
+
+Drop the JAR on the classpath. `TipCommonsAutoConfiguration` automatically
+registers a `RetentionService` bean using the application's primary `DataSource`.
 
 ```java
-import com.fdic.tip.commons.retention.util.RetentionUtil;
-import com.fdic.tip.commons.retention.exception.RetentionException;
+@Service
+@RequiredArgsConstructor
+public class InvoiceService {
 
-// After inserting a row into any table registered in retention_table_registry:
-UUID newId = invoiceDao.insert(conn, invoice);
+    private final InvoiceRepository invoiceRepo;
+    private final RetentionService  retentionService;   // injected by Spring
 
-try {
-    RetentionUtil.applyRetention(conn, "txn", "tbl_jpmcinvoices", newId);
-} catch (RetentionException e) {
-    log.error("Retention stamp failed [{}]: {}", e.getErrorCode(), e.getMessage(), e);
+    @Transactional
+    public Invoice create(InvoiceRequest req) throws RetentionException {
+        Invoice saved = invoiceRepo.save(req.toEntity());
+
+        // One call — no Connection, no DataSource
+        retentionService.applyRetention("txn", "tbl_jpmcinvoices", saved.getId());
+
+        return saved;
+    }
 }
 ```
 
-Full details → [`src/main/java/com/fdic/tip/commons/retention/util/RetentionUtil.java`](src/main/java/com/fdic/tip/commons/retention/util/RetentionUtil.java)
+### Plain Spring (manual bean declaration)
+
+```java
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public RetentionService retentionService(DataSource dataSource) {
+        return new RetentionService(dataSource);
+    }
+}
+```
+
+Then inject and use exactly like the Spring Boot example above.
+
+### Non-Spring Java (static API)
+
+**Option A — register DataSource once at startup:**
+```java
+// In your application bootstrap (main(), startup listener, etc.)
+RetentionUtil.registerDataSource(dataSource);
+
+// Then anywhere in the application — no DataSource needed per call
+RetentionUtil.applyRetention("txn", "tbl_jpmcinvoices", newRowId);
+```
+
+**Option B — pass DataSource explicitly per call:**
+```java
+RetentionUtil.applyRetention(dataSource, "txn", "tbl_jpmcinvoices", newRowId);
+```
 
 ---
 
-## Package structure
+## Advanced: inspect before writing
 
-```
-tip-commons/
-├── pom.xml                                         ← Maven build file
-├── README.md
-└── src/
-    ├── main/
-    │   ├── java/com/fdic/tip/commons/
-    │   │   └── retention/
-    │   │       ├── util/
-    │   │       │   └── RetentionUtil.java          ← Entry point
-    │   │       ├── model/
-    │   │       │   └── RetentionContext.java        ← Resolved config + dates
-    │   │       └── exception/
-    │   │           └── RetentionException.java      ← Typed error codes
-    │   └── resources/
-    │       └── META-INF/
-    │           └── tip-commons.properties
-    └── test/
-        ├── java/com/fdic/tip/commons/retention/util/
-        │   └── RetentionUtilTest.java               ← 14 unit tests (no DB)
-        └── resources/
-            └── logback-test.xml
+Both `RetentionService` and `RetentionUtil` support a two-step flow:
+
+```java
+// Step 1: resolve — reads registry, calculates dates. No DB writes.
+RetentionContext ctx = retentionService.resolve("txn", "tbl_jpmcinvoices", newId);
+
+log.info("Purge scheduled: {}", ctx.getCalculatedPurgeDate());
+if (ctx.isLegalHoldActive()) {
+    log.warn("Legal hold active — purge_date will be NULL");
+}
+
+// Step 2: apply — executes the UPDATE
+retentionService.apply(ctx);
 ```
 
 ---
 
-## Versioning convention
+## Error handling
+
+All failures throw `RetentionException` with a structured `ErrorCode`:
+
+| `ErrorCode` | Meaning | Action |
+|---|---|---|
+| `REGISTRY_NOT_FOUND` | Table not onboarded or outside effective dates | Contact retention admin |
+| `REGISTRY_INACTIVE` | Registry entry `is_active = false` | Contact retention admin |
+| `SUB_CATEGORY_NOT_FOUND` | Broken FK in registry | Data integrity alert |
+| `BASIS_DATE_NULL` | `basis_date_column` is NULL for this row | Ensure column is populated before calling |
+| `ROW_NOT_FOUND` | Row UUID doesn't exist | Check INSERT committed before calling |
+| `SQL_ERROR` | JDBC / connection failure | Log + retry or rollback |
+| `INVALID_ARGUMENT` | Null/blank argument | Fix caller code |
+
+```java
+} catch (RetentionException e) {
+    switch (e.getErrorCode()) {
+        case REGISTRY_NOT_FOUND -> alertAdmin(e);
+        case BASIS_DATE_NULL    -> log.warn("Null basis for row {}", rowId);
+        case SQL_ERROR          -> throw new RuntimeException("DB error", e);
+        default                 -> log.error("Unexpected retention error", e);
+    }
+}
+```
+
+---
+
+## Transaction behaviour
+
+`RetentionService` and `RetentionUtil` each obtain their own connection from
+the `DataSource`. To guarantee atomicity with your INSERT:
+
+```java
+// In a Spring @Transactional method — both INSERT and UPDATE share one connection
+@Transactional
+public Invoice create(InvoiceRequest req) throws RetentionException {
+    Invoice saved = invoiceRepo.save(req.toEntity());
+    retentionService.applyRetention("txn", "tbl_jpmcinvoices", saved.getId());
+    return saved;
+}
+```
+
+---
+
+## Legal hold behaviour
+
+When `retention_table_registry.legal_hold_status = TRUE`:
+- `purge_date` is set to `NULL` (record must not be purged)
+- `effective_date` is still stamped
+- A `WARN` log entry is emitted
+
+---
+
+## Build commands
+
+```bash
+# Compile + run all tests
+mvn clean verify
+
+# Install to local ~/.m2 for use by other TIP projects
+mvn clean install
+
+# With sources + javadoc JARs (for IDE navigation)
+mvn clean install -Prelease
+```
+
+---
+
+## Adding a new module to tip-commons
+
+1. Create `src/main/java/com/fdic/tip/commons/<module>/constants/` with SQL, messages, constants classes
+2. Create `src/main/java/com/fdic/tip/commons/<module>/core/` for the core logic
+3. Create `src/main/java/com/fdic/tip/commons/<module>/service/` for the Spring bean + static util
+4. Add tests under `src/test/java/com/fdic/tip/commons/<module>/`
+5. If Spring auto-registration is needed, add a `@Bean` method to `TipCommonsAutoConfiguration`
+6. Update this README
+7. Run `mvn clean verify` — all tests must pass
+8. Bump the version in `pom.xml`
+
+---
+
+## Versioning
 
 | Version | Meaning |
 |---|---|
-| `1.0.0-SNAPSHOT` | Active development — install to local `.m2` |
-| `1.0.0` | Stable release — deploy to Nexus/Artifactory |
-| `1.1.0-SNAPSHOT` | Next feature increment |
+| `1.0.0-SNAPSHOT` | Active dev — `mvn install` to local `.m2` |
+| `1.0.0` | Stable — deploy to Nexus/Artifactory |
+| `1.1.0-SNAPSHOT` | Next feature bump |
 
-Bump the version in `pom.xml` here **and** in all consuming services' `pom.xml` files when releasing.
-
----
-
-## Adding a new utility to tip-commons
-
-1. Create your package under `src/main/java/com/fdic/tip/commons/<module>/`
-2. Add unit tests under `src/test/java/com/fdic/tip/commons/<module>/`
-3. Update this README's module table
-4. Run `mvn clean verify` — all tests must pass
-5. Run `mvn install` to publish to local `.m2`
-6. Bump the patch/minor version if consuming services need to pick up the change
+Bump in this `pom.xml` **and** in all consuming services when releasing.
